@@ -1,16 +1,29 @@
 package com.GoShop.inventoryservice.service;
 
+import com.GoShop.inventoryservice.dto.InventoryDto;
 import com.GoShop.inventoryservice.repository.InventoryRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class InventoryService {
     private final InventoryRepository inventoryRepository;
     @Transactional(readOnly = true)
-    public boolean isInStock(String skuCode){
-        return inventoryRepository.findbySkuCode().isPresent();
+    @SneakyThrows
+    public List<InventoryDto> isInStock(List<String> skucode){
+        log.info("Checking Inventory");
+        return inventoryRepository.findbySkuCode(skucode).stream()
+                .map( dto -> InventoryDto.builder()
+                        .skuCode(dto.getSkuCode())
+                        .isInStock(dto.getQuantity() > 0)
+                        .build()
+                ).toList();
     }
 }
